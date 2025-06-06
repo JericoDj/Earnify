@@ -1,6 +1,6 @@
-# earnify
+# todokita
 
-Earnify Project
+Earn Tracker Project
 
 ## Getting Started
 

@@ -1,8 +1,10 @@
-import 'package:earnify/EarningHomePage.dart';
+import 'EarningHomePage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  runApp(const EarningsTrackerApp());
+  runApp(ProviderScope(
+      child: const EarningsTrackerApp()));
 }
 
 class EarningsTrackerApp extends StatelessWidget {
@@ -11,7 +13,7 @@ class EarningsTrackerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Earnings Tracker',
+      title: 'todokita',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
       ),

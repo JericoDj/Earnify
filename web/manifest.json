@@ -1,11 +1,11 @@
 {
-    "name": "earnify",
-    "short_name": "earnify",
+    "name": "todokita",
+    "short_name": "todokita",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "Earnify Project",
+    "description": "Earn Tracker Project",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -1,148 +1,58 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todokita/screens/controller/earningController.dart';
+import 'package:todokita/screens/homepage/addDailyEarning.dart';
+import 'package:todokita/screens/homepage/earningList.dart';
+import 'package:todokita/screens/homepage/monthlyGoal.dart';
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show AppBar, Colors, ElevatedButton, Icons, InputDecoration, LinearProgressIndicator, ListTile, Scaffold, TextField;
-
-class EarningsHomePage extends StatefulWidget {
+class EarningsHomePage extends ConsumerWidget {
   const EarningsHomePage({super.key});
 
   @override
-  State<EarningsHomePage> createState() => _EarningsHomePageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final earnings = ref.watch(earningsProvider);
+    final controller = ref.read(earningsProvider.notifier);
 
-class _EarningsHomePageState extends State<EarningsHomePage> {
-  double _monthlyGoal = 0.0;
-  double _dailyGoal = 0.0;
-  double _totalEarnings = 0.0;
-  final List<double> _dailyEarnings = [];
-  final TextEditingController _earningController = TextEditingController();
-  final TextEditingController _goalController = TextEditingController();
-  final TextEditingController _dailyGoalController = TextEditingController();
+    final TextEditingController earningController = TextEditingController();
+    final TextEditingController dailyGoalController = TextEditingController();
+    final TextEditingController monthlyGoalController = TextEditingController();
 
-  void _addEarning() {
-    final earning = double.tryParse(_earningController.text);
-    if (earning != null && earning > 0) {
-      setState(() {
-        _dailyEarnings.add(earning);
-        _totalEarnings += earning;
-        _earningController.clear();
-      });
-    }
-  }
+    final double monthlyProgress = earnings.monthlyGoal > 0
+        ? (earnings.totalEarnings / earnings.monthlyGoal).clamp(0, 1)
+        : 0;
 
-  void _setMonthlyGoal() {
-    final goal = double.tryParse(_goalController.text);
-    if (goal != null && goal > 0) {
-      setState(() {
-        _monthlyGoal = goal;
-        _goalController.clear();
-      });
-    }
-  }
+    final double todayEarnings =
+    earnings.dailyEarnings.isNotEmpty ? earnings.dailyEarnings.last : 0.0;
 
-  void _setDailyGoal() {
-    final goal = double.tryParse(_dailyGoalController.text);
-    if (goal != null && goal > 0) {
-      setState(() {
-        _dailyGoal = goal;
-        _dailyGoalController.clear();
-      });
-    }
-  }
-
-  double get _todayEarnings =>
-      _dailyEarnings.isNotEmpty ? _dailyEarnings.last : 0.0;
-
-  @override
-  Widget build(BuildContext context) {
-    double monthlyProgress =
-    _monthlyGoal > 0 ? (_totalEarnings / _monthlyGoal).clamp(0, 1) : 0;
-    double dailyProgress =
-    _dailyGoal > 0 ? (_todayEarnings / _dailyGoal).clamp(0, 1) : 0;
+    final double dailyProgress = earnings.dailyGoal > 0
+        ? (todayEarnings / earnings.dailyGoal).clamp(0, 1)
+        : 0;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Earnings Tracker'),
-      ),
-      body: Padding(
+      appBar: AppBar(title: const Text('Todo Kita')),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Monthly Goal
-            TextField(
-              controller: _goalController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Set Monthly Goal',
-                suffixIcon: Icon(Icons.flag),
-              ),
-              onSubmitted: (_) => _setMonthlyGoal(),
+            MonthlyGoalWidget(
+              totalEarnings: earnings.totalEarnings,
+              monthlyGoal: earnings.monthlyGoal,
+              monthlyProgress: monthlyProgress,
+              goalController: monthlyGoalController,
+              setMonthlyGoalCallback: (value) => controller.setMonthlyGoal(value),
             ),
-            ElevatedButton(
-              onPressed: _setMonthlyGoal,
-              child: const Text('Set Monthly Goal'),
+            const SizedBox(height: 24),
+            AddDailyEarnings(
+              setDailyGoalCallback: (value) => controller.setDailyGoal(value),
+              dailyGoal: earnings.dailyGoal,
+              dailyProgress: dailyProgress,
+              earningController: earningController,
+              addEarningCallback: (value) => controller.addEarning(value),
+              dailyGoalController: dailyGoalController,
             ),
-            Text('Monthly Goal: \$${_monthlyGoal.toStringAsFixed(2)}'),
-            LinearProgressIndicator(
-              value: monthlyProgress,
-              minHeight: 10,
-              backgroundColor: Colors.grey[300],
-              color: Colors.green,
-            ),
-            Text('Monthly Progress: ${(monthlyProgress * 100).toStringAsFixed(1)}%'),
-            const SizedBox(height: 16),
-
-            // Daily Goal
-            TextField(
-              controller: _dailyGoalController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Set Daily Goal',
-                suffixIcon: Icon(Icons.today),
-              ),
-              onSubmitted: (_) => _setDailyGoal(),
-            ),
-            ElevatedButton(
-              onPressed: _setDailyGoal,
-              child: const Text('Set Daily Goal'),
-            ),
-            Text('Daily Goal: \$${_dailyGoal.toStringAsFixed(2)}'),
-            LinearProgressIndicator(
-              value: dailyProgress,
-              minHeight: 10,
-              backgroundColor: Colors.grey[300],
-              color: Colors.blue,
-            ),
-            Text('Daily Progress: ${(dailyProgress * 100).toStringAsFixed(1)}%'),
-            const SizedBox(height: 16),
-
-            // Add Earning
-            TextField(
-              controller: _earningController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Add Daily Earning',
-                suffixIcon: Icon(Icons.attach_money),
-              ),
-              onSubmitted: (_) => _addEarning(),
-            ),
-            ElevatedButton(
-              onPressed: _addEarning,
-              child: const Text('Add Earning'),
-            ),
-            const SizedBox(height: 16),
-
-            // Earnings List
-            Expanded(
-              child: ListView.builder(
-                itemCount: _dailyEarnings.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    leading: const Icon(Icons.monetization_on),
-                    title: Text('Day ${index + 1}: \$${_dailyEarnings[index].toStringAsFixed(2)}'),
-                  );
-                },
-              ),
-            ),
+            const SizedBox(height: 24),
+            EarningListWidget(dailyEarnings: earnings.dailyEarnings),
           ],
         ),
       ),
